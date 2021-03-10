@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     ];
 
-// деативация табов
-    const deactive = ( ) => {
+    // деативация табов
+    const deactive = () => {
       cardDetailChangeElems.forEach(btn => btn.classList.remove('active'))
     };
 
@@ -50,22 +50,103 @@ document.addEventListener('DOMContentLoaded', () => {
 
   };
 
+  // аккордеон
+  const accordion = () => {
+    const characteristicsListElem = document.querySelector('.characteristics__list');
+    const characteristicsItemElems = document.querySelectorAll('.characteristics__item');
+
+    characteristicsItemElems.forEach(elem => { //если нужно, чтоб 1 была сразу открыта
+      if (elem.children[1].classList.contains('active')) {
+        elem.children[1].style.height = `${elem.children[1].scrollHeight}px`;
+      }
+    });
+
+    const open = (button, dropDown) => { //открывает одну плашку аккордеона
+      closeAllDrops(button, dropDown);
+      dropDown.style.height = `${dropDown.scrollHeight}px`;
+      button.classList.add('active');
+      dropDown.classList.add('active');
+    };
+
+    const close = (button, dropDown) => { //закрывает одну плашку аккордеона
+      button.classList.remove('active');
+      dropDown.classList.remove('active');
+      dropDown.style.height = '';
+    };
+
+    // закрывает весь аккордеон
+    const closeAllDrops = (button, dropDown) => {
+      characteristicsItemElems.forEach((elem) => {
+        console.dir(elem);
+        if (elem.children[0].classList.contains('active')) {
+          close(elem.children[0], elem.children[1]);
+        }
+      })
+
+    }
+    characteristicsListElem.addEventListener('click', (event) => {
+      const target = event.target;
+      if (target.classList.contains('characteristics__title')) {
+        const parent = target.closest('.characteristics__item');
+        const description = parent.querySelector('.characteristics__description');
+        description.classList.contains('active') ?
+          close(target, description) : open(target, description);
+      }
+
+      document.body.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!target.closest('.characteristics__list')) {
+          closeAllDrops();
+        };
+
+      });
+
+    });
 
 
+    // setTimeout(closeAllDrops, 5000); //закрытие всех через 5с
 
+  };
+//  работа с модальной формой
+  const modal = () => {
+    const cardDetailsButtonBuyElem = document.querySelector('.card-details__button_buy');
+    const cardDetailsButtonDeliveryElem = document.querySelector('.card-details__button_delivery');    
+    const modalElem = document.querySelector('.modal');
 
+    // закрытие модалки по escape
+    const listenerEsc = (event) => {
+      if (event.key === 'Escape') {
+        modalElem.classList.remove('open');
+        enableScroll();
+      }
+    }
+// открытие модалки при нажатии на кнопки
+    cardDetailsButtonBuyElem.addEventListener('click', () => {
+      modalElem.children[0].children[1].textContent = 'Купить';
+      modalElem.classList.add('open');
+      disableScroll();
+      document.addEventListener('keydown', listenerEsc);
+    });
 
-
-
-
-
-
-
-
-
-
+    cardDetailsButtonDeliveryElem.addEventListener('click', () => {
+      modalElem.children[0].children[1].textContent = 'Купить с доставкой';
+      modalElem.classList.add('open');
+      disableScroll();
+      document.addEventListener('keydown', listenerEsc);
+    });
+// закрытие модалки
+    modalElem.addEventListener('click', (event) => {
+      const target = event.target;
+      if (target.classList.contains('modal__close') || (!target.closest('.modal__block'))) {
+        modalElem.classList.remove('open');
+        enableScroll();
+        document.removeEventListener('keydown', listenerEsc);
+      };
+    })
+    
+  };
   tabs();
-
-
+  accordion();
+  modal();
 
 });
