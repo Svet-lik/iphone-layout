@@ -77,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // закрывает весь аккордеон
     const closeAllDrops = (button, dropDown) => {
       characteristicsItemElems.forEach((elem) => {
-        console.dir(elem);
         if (elem.children[0].classList.contains('active')) {
           close(elem.children[0], elem.children[1]);
         }
