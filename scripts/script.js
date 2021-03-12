@@ -1,4 +1,22 @@
 'use strict';
+
+//  получаем данные
+const getData = (url, callback) => {
+  const request = new XMLHttpRequest(); // запрос на сервер
+  request.open('GET', url);
+
+  request.addEventListener('readystatechange', () => {
+    if (request.readyState !== 4) return; // ждём ответ
+    if (request.status === 200) { //если данные получены
+      const response = JSON.parse(request.response); //переводим их в нужный вид
+      callback(response);
+    } else {
+      console.error(new Error('Ошибка: ' + request.status));
+    }
+  });
+  request.send();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const tabs = () => {
     const cardDetailChangeElems = document.querySelectorAll('.card-detail__change');
@@ -106,46 +124,99 @@ document.addEventListener('DOMContentLoaded', () => {
     // setTimeout(closeAllDrops, 5000); //закрытие всех через 5с
 
   };
-//  работа с модальной формой
+  //  работа с модальной формой
   const modal = () => {
     const cardDetailsButtonBuyElem = document.querySelector('.card-details__button_buy');
-    const cardDetailsButtonDeliveryElem = document.querySelector('.card-details__button_delivery');    
+    const cardDetailsButtonDeliveryElem = document.querySelector('.card-details__button_delivery');
     const modalElem = document.querySelector('.modal');
+    const cardDetailsTitleElem = document.querySelector('.card-details__title');
+    const modalTitleElem = modalElem.querySelector('.modal__title');
+    const modalSubtitleElem = modalElem.querySelector('.modal__subtitle');
+    const modalTitleSubmitElem = modalElem.querySelector('.modal__title-submit');
 
     // закрытие модалки по escape
-    const listenerEsc = (event) => {
-      if (event.key === 'Escape') {
-        modalElem.classList.remove('open');
-        enableScroll();
+    const listenerEsc = event => {
+      if (event.code === 'Escape') {
+        closeModal();
       }
     }
-// открытие модалки при нажатии на кнопки
-    cardDetailsButtonBuyElem.addEventListener('click', () => {
-      modalElem.children[0].children[1].textContent = 'Купить';
-      modalElem.classList.add('open');
-      disableScroll();
-      document.addEventListener('keydown', listenerEsc);
-    });
-
-    cardDetailsButtonDeliveryElem.addEventListener('click', () => {
-      modalElem.children[0].children[1].textContent = 'Купить с доставкой';
-      modalElem.classList.add('open');
-      disableScroll();
-      document.addEventListener('keydown', listenerEsc);
-    });
-// закрытие модалки
-    modalElem.addEventListener('click', (event) => {
+    //  функция открытия модалки
+    const openModal = (event) => {
       const target = event.target;
-      if (target.classList.contains('modal__close') || (!target.closest('.modal__block'))) {
-        modalElem.classList.remove('open');
-        enableScroll();
-        document.removeEventListener('keydown', listenerEsc);
+      modalElem.classList.add('open');
+      disableScroll();
+      document.addEventListener('keydown', listenerEsc);
+      modalTitleElem.textContent = cardDetailsTitleElem.textContent;
+      modalTitleSubmitElem.value = cardDetailsTitleElem.textContent;
+      modalSubtitleElem.textContent = target.dataset.buttonBuy;
+    };
+    //  функция закрытия модалки
+    const closeModal = () => {
+      modalElem.classList.remove('open');
+      enableScroll();
+      document.removeEventListener('keydown', listenerEsc);
+    };
+
+    // открытие модалки при нажатии на кнопки
+    cardDetailsButtonBuyElem.addEventListener('click', openModal);
+
+    cardDetailsButtonDeliveryElem.addEventListener('click', openModal);
+    // закрытие модалки
+    modalElem.addEventListener('click', event => {
+      const target = event.target;
+      if (target.classList.contains('modal__close') || target === modalElem) {
+        closeModal();
       };
     })
-    
+
   };
+
+  const renderCrossSell = () => {
+    const crossSellListElem = document.querySelector('.cross-sell__list');
+
+    const createCrossSellItem = good => {
+      const liItem = document.createElement('li');
+      liItem.innerHTML = `
+      <article class="cross-sell__item">
+        <img class="cross-sell__image" src="${good.photo}" alt="${good.name}">
+        <h3 class="cross-sell__title">${good.name}</h3>
+        <p class="cross-sell__price">${good.price}₽</p>
+        <button type="button" class="button button_buy cross-sell__button">Купить</button>
+      </article>
+    `;
+      return liItem;
+    };
+//  рандомная сортировка массива
+    const shuffle = (array) => {
+      let j;
+      let temp = null;
+
+      for (let i = array.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+      }
+    };
+
+    const createCrossSellList = (goods) => {
+      shuffle(goods);
+      
+      for (let i = 0; i < 4; i++) {
+        crossSellListElem.append(createCrossSellItem(goods[i]));
+      }
+      // goods.forEach(item => { //вывести рандомно 4 товара (+ кнопка "показать ещё")
+      //   crossSellListElem.append(createCrossSellItem(item));
+      // })
+    };
+
+    getData('cross-sell-dbase/dbase.json', createCrossSellList);
+  }
+
+
   tabs();
   accordion();
   modal();
+  renderCrossSell();
 
 });
