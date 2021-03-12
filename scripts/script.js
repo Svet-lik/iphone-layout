@@ -186,26 +186,14 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
       return liItem;
     };
-//  рандомная сортировка массива
-    const shuffle = (array) => {
-      let j;
-      let temp = null;
-
-      for (let i = array.length - 1; i > 0; i--) {
-        j = Math.floor(Math.random() * (i + 1));
-        temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-      }
-    };
 
     const createCrossSellList = (goods) => {
-      shuffle(goods);
+      goods.sort(() => Math.random() - 0.5);   //  рандомная сортировка массива
       
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 4 && i<goods.length; i++) { //вывести рандомно первые 4 товара (+ кнопка "показать ещё")
         crossSellListElem.append(createCrossSellItem(goods[i]));
       }
-      // goods.forEach(item => { //вывести рандомно 4 товара (+ кнопка "показать ещё")
+      // goods.forEach(item => { 
       //   crossSellListElem.append(createCrossSellItem(item));
       // })
     };
