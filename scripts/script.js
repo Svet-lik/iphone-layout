@@ -172,31 +172,67 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const renderCrossSell = () => {
-    const crossSellListElem = document.querySelector('.cross-sell__list');
+    const COUNT_ROW_GOODS = 4;
 
-    const createCrossSellItem = good => {
+    const crossSellListElem = document.querySelector('.cross-sell__list');
+    const crossSellAddElem = document.querySelector('.cross-sell__add');
+    const allGoods = [];
+    let wrapRender = null;
+
+    const createCrossSellItem = ({
+      photo,
+      name,
+      price
+    }) => {
       const liItem = document.createElement('li');
       liItem.innerHTML = `
       <article class="cross-sell__item">
-        <img class="cross-sell__image" src="${good.photo}" alt="${good.name}">
-        <h3 class="cross-sell__title">${good.name}</h3>
-        <p class="cross-sell__price">${good.price}₽</p>
+        <img class="cross-sell__image" src="${photo}" alt="${name}">
+        <h3 class="cross-sell__title">${name}</h3>
+        <p class="cross-sell__price">${price}₽</p>
         <button type="button" class="button button_buy cross-sell__button">Купить</button>
       </article>
     `;
       return liItem;
     };
 
-    const createCrossSellList = (goods) => {
-      goods.sort(() => Math.random() - 0.5);   //  рандомная сортировка массива
-      
-      for (let i = 0; i < 4 && i<goods.length; i++) { //вывести рандомно первые 4 товара (+ кнопка "показать ещё")
-        crossSellListElem.append(createCrossSellItem(goods[i]));
+    //  рандомная сортировка массива
+    const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+
+    const render = arr => {
+      arr.forEach(item => {
+        crossSellListElem.append(createCrossSellItem(item));
+      });
+    }
+
+    // ограничевает количество вызовов функции
+    const wrapper = (fn, count) => {
+      let counter = 1;
+      return (...args) => {
+        if (counter === count - 1) crossSellAddElem.remove();
+        if (counter === count) {
+          return};
+        counter++;
+        return fn(...args)
+
       }
-      // goods.forEach(item => { 
-      //   crossSellListElem.append(createCrossSellItem(item));
-      // })
     };
+
+    // запускает вывод карточек
+    const createCrossSellList = (goods) => {
+
+      wrapRender = wrapper(render, Math.ceil(goods.length/COUNT_ROW_GOODS));
+
+      allGoods.push(...shuffle(goods));
+      const fourItems = allGoods.splice(0, COUNT_ROW_GOODS);
+
+      render(fourItems);
+    };
+    
+    // слушатель нажатия на кнопку "добавить"
+    crossSellAddElem.addEventListener('click', () => {
+      wrapRender(allGoods.splice(0, COUNT_ROW_GOODS));
+    });
 
     getData('cross-sell-dbase/dbase.json', createCrossSellList);
   }
@@ -206,5 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
   accordion();
   modal();
   renderCrossSell();
+  amenu('.header-menu', '.header-menu__list', '.header-menu__item', '.header-menu__burger');
 
 });
